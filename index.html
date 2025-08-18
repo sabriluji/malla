@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Malla interactiva – Ingeniería en Ciencia de Datos (UNITEC)</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <style>
+    :root {
+      --bg: #ffe9f4;
+      --card: #ffffff;
+      --muted: #555;
+      --text: #333;
+      --accent: #d598a3;
+      --ok: #d598a3;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
+    header { padding: 22px 20px 14px; display: grid; gap: 10px; align-items: center; justify-items: center; border-bottom: 1px solid #e5c2ce; position: relative; }
+    .title{ text-align:center; font-size: 36px; line-height:1.2; margin: 0; font-weight: 800; }
+    .avg-box{ position:absolute; top: 18px; right: 20px; background:#fff; border:1px solid #d598a3; border-radius:8px; padding:6px 10px; font-size:14px; font-weight:600; color:var(--text); }
+
+    .progress-wrap{ width:100%; max-width: 980px; margin: 4px auto 0; display:flex; flex-direction:column; gap:6px; align-items:center; }
+    .progress-bar{ position:relative; height:14px; width:100%; border-radius:999px; overflow:hidden; border:1px solid #d598a3; background:#FEE3DF55; }
+    .progress-bar::before{ content:""; position:absolute; inset:0; width:var(--w,0%); transition: width .25s ease; background: repeating-linear-gradient(90deg,
+        #ffe9f4 0 20px,
+        #d598a3 20px 40px,
+        #9cabc8 40px 60px
+      ); }
+    .progress-label{ font-size:12px; color: var(--muted); }
+
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    button, select { background: #f7d8e6; color: var(--text); border: 1px solid #d598a3; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+    button:hover { border-color: var(--accent); background: #f0cbd9; }
+
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(260px, 1fr)); gap: 14px; padding: 18px; }
+    @media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, minmax(260px, 1fr)); } }
+    @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(260px, 1fr)); } }
+    @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+
+    .col { background: transparent; border: 1px dashed #d598a3; border-radius: 14px; padding: 10px; }
+    .col h2 { margin: 4px 6px 10px; font-size: 15px; color: var(--muted); font-weight: 700; text-align:center; }
+
+    .course { background: var(--card); border: 1px solid #d598a3; border-radius: 12px; padding: 10px; margin: 8px; position: relative; transition: transform .12s ease, border-color .12s ease, background-color .12s ease, color .12s ease; }
+    .course:hover { transform: translateY(-1px); border-color: var(--accent); }
+    .course.approved { background: #d598a3; color: #ffffff; }
+
+    .course .name { font-weight: 700; margin-bottom: 6px; display:flex; justify-content:space-between; align-items:center; gap:6px; }
+    .course .name input{ width:48px; padding:2px 4px; border:1px solid #d598a3; border-radius:6px; font-size:13px; text-align:center; }
+    .course .meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+    .course.approved .meta { color: #fff; opacity: .9; }
+
+    .badge { display: inline-block; font-size: 11px; background: #f0cbd9; border: 1px solid #d598a3; color: #333; padding: 2px 6px; border-radius: 999px; }
+
+    .foot { padding: 12px 18px 22px; color: var(--muted); font-size: 12px; text-align:center; }
+    a { color: var(--accent); }
+    .hint { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="title">Ingeniería en Ciencia de Datos – Malla interactiva</h1>
+    <div class="avg-box" id="avgBox">Promedio: –</div>
+    <div class="progress-wrap" aria-label="Progreso del plan de estudios">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-label" id="progressLabel">0% (0/0)</div>
+    </div>
+    <div class="controls">
+      <select id="filter" aria-label="Filtro de materias">
+        <option value="all">Mostrar todo</option>
+        <option value="pending">Solo pendientes</option>
+        <option value="approved">Solo aprobadas</option>
+      </select>
+      <button id="clear">Borrar progreso</button>
+      <span class="hint">Haz clic en una materia para marcarla como aprobada.</span>
+    </div>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <div class="foot">
+    <p>Estado guardado en <strong>este navegador</strong> (localStorage).</p>
+  </div>
+
+  <script>
+    const PLAN = { /* igual que antes */ 
+      1: [{ nombre:"Fundamentos de ciencia de datos" },{ nombre:"Geometría analítica vectorial en 2D" },{ nombre:"Álgebra para ciencias" },{ nombre:"Comunicación oral y escrita" },{ nombre:"Inglés I" }],
+      2: [{ nombre:"Matemáticas discretas" },{ nombre:"Cálculo diferencial para ciencias" },{ nombre:"Espacios y transformaciones lineales" },{ nombre:"Geometría analítica vectorial en 3D" },{ nombre:"Inglés II" }],
+      // ... resto del plan
+    };
+
+    const KEY = "malla_unitec_progress_v1";
+    const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+
+    function isApproved(name){ return Boolean(saved[name]?.aprobada); }
+    function toggleApproved(name){
+      saved[name] = saved[name] || {};
+      saved[name].aprobada = !saved[name].aprobada;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+      render();
+    }
+    function setNota(name, nota){
+      saved[name] = saved[name] || {};
+      saved[name].nota = nota;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+      renderPromedio();
+    }
+
+    const grid = document.getElementById('grid');
+    const filter = document.getElementById('filter');
+
+    function courseCard(course){
+      const div = document.createElement('div');
+      div.className = 'course' + (isApproved(course.nombre) ? ' approved' : '');
+      div.tabIndex = 0;
+      div.role = 'button';
+      div.title = 'Clic para marcar como aprobada';
+      div.addEventListener('click', (e) => { if(e.target.tagName!=="INPUT") toggleApproved(course.nombre); });
+      div.addEventListener('keypress', (e) => { if(e.key === 'Enter' || e.key === ' ') toggleApproved(course.nombre); });
+
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = course.nombre;
+
+      // Campo de nota
+      const input = document.createElement('input');
+      input.type = 'number'; input.min = 0; input.max = 100; input.step = 1;
+      input.value = saved[course.nombre]?.nota || "";
+      input.placeholder = "–";
+      input.addEventListener('input', (e)=> setNota(course.nombre, e.target.value));
+      name.appendChild(input);
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+
+      div.appendChild(name);
+      if(meta.textContent) div.appendChild(meta);
+      return div;
+    }
+
+    function render(){
+      grid.innerHTML = '';
+      const mode = filter.value;
+      let total = 0; let done = 0;
+
+      for(const cuatri of Object.keys(PLAN).map(Number).sort((a,b)=>a-b)){
+        const col = document.createElement('section');
+        col.className = 'col';
+        const h2 = document.createElement('h2');
+        h2.textContent = `${cuatri}º Cuatrimestre`;
+        col.appendChild(h2);
+
+        const cursosAll = PLAN[cuatri];
+        total += cursosAll.length;
+        done += cursosAll.filter(c=>isApproved(c.nombre)).length;
+
+        const cursos = cursosAll.filter(c => {
+          if(mode === 'approved') return isApproved(c.nombre);
+          if(mode === 'pending') return !isApproved(c.nombre);
+          return true;
+        });
+
+        if(cursos.length === 0){
+          const empty = document.createElement('div');
+          empty.className = 'course';
+          empty.innerHTML = '<span class="meta">(sin materias para este filtro)</span>';
+          col.appendChild(empty);
+        } else {
+          for(const c of cursos){ col.appendChild(courseCard(c)); }
+        }
+
+        grid.appendChild(col);
+      }
+
+      const pct = total ? Math.round((done/total)*100) : 0;
+      document.getElementById('progressBar').style.setProperty('--w', pct + '%');
+      document.getElementById('progressLabel').textContent = `${pct}% (${done}/${total})`;
+
+      renderPromedio();
+    }
+
+    function renderPromedio(){
+      let sum = 0, count = 0;
+      for(const k in saved){
+        const n = parseFloat(saved[k]?.nota);
+        if(!isNaN(n)){ sum += n; count++; }
+      }
+      const avg = count ? (sum/count).toFixed(2) : "–";
+      document.getElementById('avgBox').textContent = `Promedio: ${avg}`;
+    }
+
+    document.getElementById('clear').addEventListener('click', () => {
+      if(confirm('¿Borrar el progreso guardado en este navegador?')){
+        localStorage.removeItem(KEY);
+        location.reload();
+      }
+    });
+
+    filter.addEventListener('change', render);
+    render();
+  </script>
+</body>
+</html>
