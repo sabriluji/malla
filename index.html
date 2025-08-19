@@ -4,46 +4,33 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Malla interactiva – Ingeniería en Ciencia de Datos (UNITEC)</title>
+  <!-- Evitar caché para que veas cambios al instante en GitHub Pages -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <style>
     :root {
-      --bg: #ffe9f4;
-      --card: #ffffff;
-      --muted: #555;
-      --text: #333;
-      --accent: #d598a3;
-      --ok: #d598a3;
+      /* Tema rosa */
+      --bg: #ffe9f4;           /* fondo */
+      --card: #ffffff;         /* tarjeta */
+      --muted: #555;           /* texto suave */
+      --text: #333;            /* texto normal */
+      --accent: #d598a3;       /* acento */
+      --ok: #d598a3;           /* aprobado */
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
-    header { padding: 22px 20px 14px; display: grid; gap: 10px; align-items: center; justify-items: center; border-bottom: 1px solid #e5c2ce; position: relative; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    header { padding: 22px 20px 14px; display: grid; gap: 10px; align-items: center; justify-items: center; border-bottom: 1px solid #e5c2ce; }
     .title{ text-align:center; font-size: 36px; line-height:1.2; margin: 0; font-weight: 800; }
 
-    /* Promedio debajo de la barra */
-    .avg-box{
-      position: static;
-      order: 2;
-      justify-self: center;
-      background:#fff;
-      border:1px solid #d598a3;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
-      font-weight:600;
-      color:var(--text);
-      margin-top: 4px;
-    }
-
-    .progress-wrap{ width:100%; max-width: 980px; margin: 4px auto 0; display:flex; flex-direction:column; gap:6px; align-items:center; order:1; }
+    .progress-wrap{ width:100%; max-width: 980px; margin: 4px auto 0; display:flex; flex-direction:column; gap:6px; align-items:center; }
     .progress-bar{ position:relative; height:14px; width:100%; border-radius:999px; overflow:hidden; border:1px solid #d598a3; background:#FEE3DF55; }
     .progress-bar::before{ content:""; position:absolute; inset:0; width:var(--w,0%); transition: width .25s ease; background: repeating-linear-gradient(90deg,
         #9cabc8 40px 60px
       ); }
     .progress-label{ font-size:12px; color: var(--muted); }
 
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; order:3; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
     button, select { background: #f7d8e6; color: var(--text); border: 1px solid #d598a3; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
     button:hover { border-color: var(--accent); background: #f0cbd9; }
 
@@ -59,8 +46,8 @@
     .course:hover { transform: translateY(-1px); border-color: var(--accent); }
     .course.approved { background: #d598a3; color: #ffffff; }
 
-    .course .name { font-weight: 700; margin-bottom: 6px; display:flex; justify-content:space-between; align-items:center; gap:6px; }
-    .course .name input{ width:48px; padding:2px 4px; border:1px solid #d598a3; border-radius:6px; font-size:13px; text-align:center; }
+    .course .name { font-weight: 700; margin-bottom: 6px; }
+
     .course .meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
     .course.approved .meta { color: #fff; opacity: .9; }
 
@@ -77,8 +64,8 @@
     <div class="progress-wrap" aria-label="Progreso del plan de estudios">
       <div class="progress-bar" id="progressBar"></div>
       <div class="progress-label" id="progressLabel">0% (0/0)</div>
+      <!-- Aquí se insertará el Promedio dinámicamente -->
     </div>
-    <div class="avg-box" id="avgBox">Promedio: –</div>
     <div class="controls">
       <select id="filter" aria-label="Filtro de materias">
         <option value="all">Mostrar todo</option>
@@ -93,24 +80,92 @@
   <main class="grid" id="grid"></main>
 
   <div class="foot">
-    <p>Estado guardado en <strong>este navegador</strong> (localStorage).</p>
+    <p>Estado guardado en <strong>este navegador</strong> (localStorage). Puedes publicar este archivo como <em>GitHub Pages</em> sin backend.</p>
   </div>
 
   <script>
     // === Plan por cuatrimestre ===
     const PLAN = {
-      1: [ { nombre: "Fundamentos de ciencia de datos" }, { nombre: "Geometría analítica vectorial en 2D" }, { nombre: "Álgebra para ciencias" }, { nombre: "Comunicación oral y escrita" }, { nombre: "Inglés I" } ],
-      2: [ { nombre: "Matemáticas discretas" }, { nombre: "Cálculo diferencial para ciencias" }, { nombre: "Espacios y transformaciones lineales" }, { nombre: "Geometría analítica vectorial en 3D" }, { nombre: "Inglés II" } ],
-      3: [ { nombre: "Fundamentos de programación" }, { nombre: "Cálculo integral para ciencias" }, { nombre: "Pensamiento para el diseño e innovación" }, { nombre: "Ciencia y técnica con humanismo" }, { nombre: "Inglés III" } ],
-      4: [ { nombre: "Estructura de datos" }, { nombre: "Cálculo en varias variables" }, { nombre: "Modelos probabilísticos" }, { nombre: "Responsabilidad social y sustentabilidad" }, { nombre: "Inglés IV" } ],
-      5: [ { nombre: "Programación avanzada" }, { nombre: "Ecuaciones diferenciales" }, { nombre: "Modelos estadísticos" }, { nombre: "Comunicación y visualización de datos" }, { nombre: "Inglés V" } ],
-      6: [ { nombre: "Modelos de bases de datos" }, { nombre: "Métodos numéricos" }, { nombre: "Modelos estadísticos avanzados" }, { nombre: "Modelado computacional" }, { nombre: "Inglés VI" } ],
-      7: [ { nombre: "Gestión de bases de datos" }, { nombre: "Procesos estocásticos" }, { nombre: "Modelado y analítica de datos" }, { nombre: "Sistemas no lineales" }, { nombre: "Estrategia y modelos de negocio" } ],
-      8: [ { nombre: "Programación para ciencia de datos" }, { nombre: "Ingeniería de requerimientos" }, { nombre: "Modelado y analítica de datos avanzada" }, { nombre: "Sistemas complejos" }, { nombre: "Investigación de operaciones y optimización" } ],
-      9: [ { nombre: "Programación para ciencia de datos avanzada" }, { nombre: "Inteligencia artificial" }, { nombre: "Bases de datos no relacionales" }, { nombre: "Cómputo en la nube" } ],
-      10: [ { nombre: "Internet de las cosas" }, { nombre: "Aprendizaje automático" }, { nombre: "Manejo de grandes volúmenes de datos" }, { nombre: "Ingeniería de aplicaciones para ciencia de datos" } ],
-      11: [ { nombre: "Ciencia de datos en el sector público" }, { nombre: "Procesamiento de lenguaje natural" }, { nombre: "Redes neuronales" }, { nombre: "Gestión de proyectos de tecnología" } ],
-      12: [ { nombre: "Seguridad de tecnología de información" }, { nombre: "Ciencia de datos en el sector privado" }, { nombre: "Aprendizaje profundo" }, { nombre: "Cómputo paralelo" } ]
+      1: [
+        { nombre: "Fundamentos de ciencia de datos" },
+        { nombre: "Geometría analítica vectorial en 2D" },
+        { nombre: "Álgebra para ciencias" },
+        { nombre: "Comunicación oral y escrita" },
+        { nombre: "Inglés I" }
+      ],
+      2: [
+        { nombre: "Matemáticas discretas" },
+        { nombre: "Cálculo diferencial para ciencias" },
+        { nombre: "Espacios y transformaciones lineales" },
+        { nombre: "Geometría analítica vectorial en 3D" },
+        { nombre: "Inglés II" }
+      ],
+      3: [
+        { nombre: "Fundamentos de programación" },
+        { nombre: "Cálculo integral para ciencias" },
+        { nombre: "Pensamiento para el diseño e innovación" },
+        { nombre: "Ciencia y técnica con humanismo" },
+        { nombre: "Inglés III" }
+      ],
+      4: [
+        { nombre: "Estructura de datos" },
+        { nombre: "Cálculo en varias variables" },
+        { nombre: "Modelos probabilísticos" },
+        { nombre: "Responsabilidad social y sustentabilidad" },
+        { nombre: "Inglés IV" }
+      ],
+      5: [
+        { nombre: "Programación avanzada" },
+        { nombre: "Ecuaciones diferenciales" },
+        { nombre: "Modelos estadísticos" },
+        { nombre: "Comunicación y visualización de datos" },
+        { nombre: "Inglés V" }
+      ],
+      6: [
+        { nombre: "Modelos de bases de datos" },
+        { nombre: "Métodos numéricos" },
+        { nombre: "Modelos estadísticos avanzados" },
+        { nombre: "Modelado computacional" },
+        { nombre: "Inglés VI" }
+      ],
+      7: [
+        { nombre: "Gestión de bases de datos" },
+        { nombre: "Procesos estocásticos" },
+        { nombre: "Modelado y analítica de datos" },
+        { nombre: "Sistemas no lineales" },
+        { nombre: "Estrategia y modelos de negocio" }
+      ],
+      8: [
+        { nombre: "Programación para ciencia de datos" },
+        { nombre: "Ingeniería de requerimientos" },
+        { nombre: "Modelado y analítica de datos avanzada" },
+        { nombre: "Sistemas complejos" },
+        { nombre: "Investigación de operaciones y optimización" }
+      ],
+      9: [
+        { nombre: "Programación para ciencia de datos avanzada" },
+        { nombre: "Inteligencia artificial" },
+        { nombre: "Bases de datos no relacionales" },
+        { nombre: "Cómputo en la nube" }
+      ],
+      10: [
+        { nombre: "Internet de las cosas" },
+        { nombre: "Aprendizaje automático" },
+        { nombre: "Manejo de grandes volúmenes de datos" },
+        { nombre: "Ingeniería de aplicaciones para ciencia de datos" }
+      ],
+      11: [
+        { nombre: "Ciencia de datos en el sector público" },
+        { nombre: "Procesamiento de lenguaje natural" },
+        { nombre: "Redes neuronales" },
+        { nombre: "Gestión de proyectos de tecnología" }
+      ],
+      12: [
+        { nombre: "Seguridad de tecnología de información" },
+        { nombre: "Ciencia de datos en el sector privado" },
+        { nombre: "Aprendizaje profundo" },
+        { nombre: "Cómputo paralelo" }
+      ]
     };
 
     // === Persistencia local ===
@@ -122,13 +177,8 @@
       localStorage.setItem(KEY, JSON.stringify(saved));
       render();
     }
-    function setNota(name, nota){
-      saved[name] = saved[name] || {};
-      saved[name].nota = nota;
-      localStorage.setItem(KEY, JSON.stringify(saved));
-      renderPromedio();
-    }
 
+    // === Render ===
     const grid = document.getElementById('grid');
     const filter = document.getElementById('filter');
 
@@ -138,25 +188,14 @@
       div.tabIndex = 0;
       div.role = 'button';
       div.title = 'Clic para marcar como aprobada';
-      div.addEventListener('click', (e) => { if(e.target.tagName!=="INPUT") toggleApproved(course.nombre); });
+      div.addEventListener('click', () => toggleApproved(course.nombre));
       div.addEventListener('keypress', (e) => { if(e.key === 'Enter' || e.key === ' ') toggleApproved(course.nombre); });
 
       const name = document.createElement('div');
       name.className = 'name';
       name.textContent = course.nombre;
 
-      const input = document.createElement('input');
-      input.type = 'number'; input.min = 0; input.max = 100; input.step = 1;
-      input.value = saved[course.nombre]?.nota || "";
-      input.placeholder = "–";
-      input.addEventListener('input', (e)=> setNota(course.nombre, e.target.value));
-      name.appendChild(input);
-
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-
       div.appendChild(name);
-      if(meta.textContent) div.appendChild(meta);
       return div;
     }
 
@@ -194,26 +233,16 @@
         grid.appendChild(col);
       }
 
+      // Actualiza la barra de progreso
       const pct = total ? Math.round((done/total)*100) : 0;
       document.getElementById('progressBar').style.setProperty('--w', pct + '%');
       document.getElementById('progressLabel').textContent = `${pct}% (${done}/${total})`;
-
-      renderPromedio();
-    }
-
-    function renderPromedio(){
-      let sum = 0, count = 0;
-      for(const k in saved){
-        const n = parseFloat(saved[k]?.nota);
-        if(!isNaN(n)){ sum += n; count++; }
-      }
-      const avg = count ? (sum/count).toFixed(2) : "–";
-      document.getElementById('avgBox').textContent = `Promedio: ${avg}`;
     }
 
     document.getElementById('clear').addEventListener('click', () => {
       if(confirm('¿Borrar el progreso guardado en este navegador?')){
         localStorage.removeItem(KEY);
+        localStorage.removeItem("malla_unitec_grades_v1");
         location.reload();
       }
     });
@@ -221,6 +250,90 @@
     filter.addEventListener('change', render);
     render();
   </script>
+
+  <!-- === Add-on: Calificaciones y Promedio === -->
+  <script>
+  (function(){
+    const KEY_NOTAS = 'malla_unitec_grades_v1';
+    const grades = JSON.parse(localStorage.getItem(KEY_NOTAS) || "{}");
+
+    function saveNotas(){ localStorage.setItem(KEY_NOTAS, JSON.stringify(grades)); }
+
+    // Caja de promedio debajo del porcentaje
+    const progressWrap = document.querySelector('.progress-wrap');
+    const avgBox = document.createElement('div');
+    avgBox.id = 'avgBox';
+    avgBox.textContent = 'Promedio: –';
+    avgBox.style.cssText = [
+      'font-size:14px',
+      'font-weight:600',
+      'color:#333',
+      'margin-top:6px'
+    ].join(';');
+    progressWrap.appendChild(avgBox);
+
+    function renderPromedio(){
+      let sum = 0, count = 0;
+      for(const k in grades){
+        const v = parseFloat(grades[k]);
+        if(!isNaN(v) && window.isApproved(k)){ sum += v; count++; }
+      }
+      avgBox.textContent = 'Promedio: ' + (count ? (sum/count).toFixed(2) : '–');
+    }
+
+    function enhanceCards(){
+      document.querySelectorAll('.course .name').forEach(nameEl=>{
+        if(nameEl.querySelector('input')) return;
+        const title = nameEl.textContent.trim();
+
+        nameEl.textContent = '';
+        nameEl.style.display = 'flex';
+        nameEl.style.alignItems = 'center';
+        nameEl.style.justifyContent = 'space-between';
+        nameEl.style.gap = '6px';
+
+        const span = document.createElement('span');
+        span.textContent = title;
+        span.style.flex = '1';
+
+        const input = document.createElement('input');
+        input.type = 'number'; input.min = 0; input.max = 100; input.step = 1;
+        input.placeholder = '–';
+        input.value = grades[title] ?? '';
+        input.style.width = '48px';
+        input.style.padding = '2px 4px';
+        input.style.border = '1px solid #d598a3';
+        input.style.borderRadius = '6px';
+        input.style.textAlign = 'center';
+        input.style.fontSize = '13px';
+
+        input.addEventListener('click', e=>e.stopPropagation());
+        input.addEventListener('keypress', e=>e.stopPropagation());
+        input.addEventListener('input', e=>{
+          grades[title] = e.target.value;
+          saveNotas();
+          renderPromedio();
+        });
+
+        nameEl.append(span, input);
+      });
+      renderPromedio();
+    }
+
+    const _render = window.render;
+    if(typeof _render === 'function'){
+      window.render = function(){
+        _render();
+        enhanceCards();
+      };
+    }
+
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', enhanceCards);
+    } else {
+      setTimeout(enhanceCards, 50);
+    }
+  })();
+  </script>
 </body>
 </html>
-
