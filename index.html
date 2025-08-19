@@ -20,16 +20,30 @@
     html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
     header { padding: 22px 20px 14px; display: grid; gap: 10px; align-items: center; justify-items: center; border-bottom: 1px solid #e5c2ce; position: relative; }
     .title{ text-align:center; font-size: 36px; line-height:1.2; margin: 0; font-weight: 800; }
-    .avg-box{ position:absolute; top: 18px; right: 20px; background:#fff; border:1px solid #d598a3; border-radius:8px; padding:6px 10px; font-size:14px; font-weight:600; color:var(--text); }
 
-    .progress-wrap{ width:100%; max-width: 980px; margin: 4px auto 0; display:flex; flex-direction:column; gap:6px; align-items:center; }
+    /* Promedio debajo de la barra */
+    .avg-box{
+      position: static;
+      order: 2;
+      justify-self: center;
+      background:#fff;
+      border:1px solid #d598a3;
+      border-radius:8px;
+      padding:6px 10px;
+      font-size:14px;
+      font-weight:600;
+      color:var(--text);
+      margin-top: 4px;
+    }
+
+    .progress-wrap{ width:100%; max-width: 980px; margin: 4px auto 0; display:flex; flex-direction:column; gap:6px; align-items:center; order:1; }
     .progress-bar{ position:relative; height:14px; width:100%; border-radius:999px; overflow:hidden; border:1px solid #d598a3; background:#FEE3DF55; }
     .progress-bar::before{ content:""; position:absolute; inset:0; width:var(--w,0%); transition: width .25s ease; background: repeating-linear-gradient(90deg,
         #9cabc8 40px 60px
       ); }
     .progress-label{ font-size:12px; color: var(--muted); }
 
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; order:3; }
     button, select { background: #f7d8e6; color: var(--text); border: 1px solid #d598a3; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
     button:hover { border-color: var(--accent); background: #f0cbd9; }
 
@@ -60,11 +74,11 @@
 <body>
   <header>
     <h1 class="title">Ingeniería en Ciencia de Datos (UNITEC)</h1>
-    <div class="avg-box" id="avgBox">Promedio: –</div>
     <div class="progress-wrap" aria-label="Progreso del plan de estudios">
       <div class="progress-bar" id="progressBar"></div>
       <div class="progress-label" id="progressLabel">0% (0/0)</div>
     </div>
+    <div class="avg-box" id="avgBox">Promedio: –</div>
     <div class="controls">
       <select id="filter" aria-label="Filtro de materias">
         <option value="all">Mostrar todo</option>
@@ -82,89 +96,21 @@
     <p>Estado guardado en <strong>este navegador</strong> (localStorage).</p>
   </div>
 
-    <script>
+  <script>
     // === Plan por cuatrimestre ===
     const PLAN = {
-      1: [
-        { nombre: "Fundamentos de ciencia de datos" },
-        { nombre: "Geometría analítica vectorial en 2D" },
-        { nombre: "Álgebra para ciencias" },
-        { nombre: "Comunicación oral y escrita" },
-        { nombre: "Inglés I" }
-      ],
-      2: [
-        { nombre: "Matemáticas discretas" },
-        { nombre: "Cálculo diferencial para ciencias" },
-        { nombre: "Espacios y transformaciones lineales" },
-        { nombre: "Geometría analítica vectorial en 3D" },
-        { nombre: "Inglés II" }
-      ],
-      3: [
-        { nombre: "Fundamentos de programación" },
-        { nombre: "Cálculo integral para ciencias" },
-        { nombre: "Pensamiento para el diseño e innovación" },
-        { nombre: "Ciencia y técnica con humanismo" },
-        { nombre: "Inglés III" }
-      ],
-      4: [
-        { nombre: "Estructura de datos" },
-        { nombre: "Cálculo en varias variables" },
-        { nombre: "Modelos probabilísticos" },
-        { nombre: "Responsabilidad social y sustentabilidad" },
-        { nombre: "Inglés IV" }
-      ],
-      5: [
-        { nombre: "Programación avanzada" },
-        { nombre: "Ecuaciones diferenciales" },
-        { nombre: "Modelos estadísticos" },
-        { nombre: "Comunicación y visualización de datos" },
-        { nombre: "Inglés V" }
-      ],
-      6: [
-        { nombre: "Modelos de bases de datos" },
-        { nombre: "Métodos numéricos" },
-        { nombre: "Modelos estadísticos avanzados" },
-        { nombre: "Modelado computacional" },
-        { nombre: "Inglés VI" }
-      ],
-      7: [
-        { nombre: "Gestión de bases de datos" },
-        { nombre: "Procesos estocásticos" },
-        { nombre: "Modelado y analítica de datos" },
-        { nombre: "Sistemas no lineales" },
-        { nombre: "Estrategia y modelos de negocio" }
-      ],
-      8: [
-        { nombre: "Programación para ciencia de datos" },
-        { nombre: "Ingeniería de requerimientos" },
-        { nombre: "Modelado y analítica de datos avanzada" },
-        { nombre: "Sistemas complejos" },
-        { nombre: "Investigación de operaciones y optimización" }
-      ],
-      9: [
-        { nombre: "Programación para ciencia de datos avanzada" },
-        { nombre: "Inteligencia artificial" },
-        { nombre: "Bases de datos no relacionales" },
-        { nombre: "Cómputo en la nube" }
-      ],
-      10: [
-        { nombre: "Internet de las cosas" },
-        { nombre: "Aprendizaje automático" },
-        { nombre: "Manejo de grandes volúmenes de datos" },
-        { nombre: "Ingeniería de aplicaciones para ciencia de datos" }
-      ],
-      11: [
-        { nombre: "Ciencia de datos en el sector público" },
-        { nombre: "Procesamiento de lenguaje natural" },
-        { nombre: "Redes neuronales" },
-        { nombre: "Gestión de proyectos de tecnología" }
-      ],
-      12: [
-        { nombre: "Seguridad de tecnología de información" },
-        { nombre: "Ciencia de datos en el sector privado" },
-        { nombre: "Aprendizaje profundo" },
-        { nombre: "Cómputo paralelo" }
-      ]
+      1: [ { nombre: "Fundamentos de ciencia de datos" }, { nombre: "Geometría analítica vectorial en 2D" }, { nombre: "Álgebra para ciencias" }, { nombre: "Comunicación oral y escrita" }, { nombre: "Inglés I" } ],
+      2: [ { nombre: "Matemáticas discretas" }, { nombre: "Cálculo diferencial para ciencias" }, { nombre: "Espacios y transformaciones lineales" }, { nombre: "Geometría analítica vectorial en 3D" }, { nombre: "Inglés II" } ],
+      3: [ { nombre: "Fundamentos de programación" }, { nombre: "Cálculo integral para ciencias" }, { nombre: "Pensamiento para el diseño e innovación" }, { nombre: "Ciencia y técnica con humanismo" }, { nombre: "Inglés III" } ],
+      4: [ { nombre: "Estructura de datos" }, { nombre: "Cálculo en varias variables" }, { nombre: "Modelos probabilísticos" }, { nombre: "Responsabilidad social y sustentabilidad" }, { nombre: "Inglés IV" } ],
+      5: [ { nombre: "Programación avanzada" }, { nombre: "Ecuaciones diferenciales" }, { nombre: "Modelos estadísticos" }, { nombre: "Comunicación y visualización de datos" }, { nombre: "Inglés V" } ],
+      6: [ { nombre: "Modelos de bases de datos" }, { nombre: "Métodos numéricos" }, { nombre: "Modelos estadísticos avanzados" }, { nombre: "Modelado computacional" }, { nombre: "Inglés VI" } ],
+      7: [ { nombre: "Gestión de bases de datos" }, { nombre: "Procesos estocásticos" }, { nombre: "Modelado y analítica de datos" }, { nombre: "Sistemas no lineales" }, { nombre: "Estrategia y modelos de negocio" } ],
+      8: [ { nombre: "Programación para ciencia de datos" }, { nombre: "Ingeniería de requerimientos" }, { nombre: "Modelado y analítica de datos avanzada" }, { nombre: "Sistemas complejos" }, { nombre: "Investigación de operaciones y optimización" } ],
+      9: [ { nombre: "Programación para ciencia de datos avanzada" }, { nombre: "Inteligencia artificial" }, { nombre: "Bases de datos no relacionales" }, { nombre: "Cómputo en la nube" } ],
+      10: [ { nombre: "Internet de las cosas" }, { nombre: "Aprendizaje automático" }, { nombre: "Manejo de grandes volúmenes de datos" }, { nombre: "Ingeniería de aplicaciones para ciencia de datos" } ],
+      11: [ { nombre: "Ciencia de datos en el sector público" }, { nombre: "Procesamiento de lenguaje natural" }, { nombre: "Redes neuronales" }, { nombre: "Gestión de proyectos de tecnología" } ],
+      12: [ { nombre: "Seguridad de tecnología de información" }, { nombre: "Ciencia de datos en el sector privado" }, { nombre: "Aprendizaje profundo" }, { nombre: "Cómputo paralelo" } ]
     };
 
     // === Persistencia local ===
@@ -199,7 +145,6 @@
       name.className = 'name';
       name.textContent = course.nombre;
 
-      // Campo de nota
       const input = document.createElement('input');
       input.type = 'number'; input.min = 0; input.max = 100; input.step = 1;
       input.value = saved[course.nombre]?.nota || "";
@@ -278,3 +223,4 @@
   </script>
 </body>
 </html>
+
