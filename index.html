@@ -82,9 +82,10 @@
     <p>Estado guardado en <strong>este navegador</strong> (localStorage).</p>
   </div>
 
-  <script>
-    const PLAN = { /* igual que antes */ 
-     1: [
+    <script>
+    // === Plan por cuatrimestre ===
+    const PLAN = {
+      1: [
         { nombre: "Fundamentos de ciencia de datos" },
         { nombre: "Geometría analítica vectorial en 2D" },
         { nombre: "Álgebra para ciencias" },
@@ -163,16 +164,15 @@
         { nombre: "Ciencia de datos en el sector privado" },
         { nombre: "Aprendizaje profundo" },
         { nombre: "Cómputo paralelo" }
-      ] // ... resto del plan
+      ]
     };
 
+    // === Persistencia local ===
     const KEY = "malla_unitec_progress_v1";
     const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-
-    function isApproved(name){ return Boolean(saved[name]?.aprobada); }
+    function isApproved(name){ return Boolean(saved[name]); }
     function toggleApproved(name){
-      saved[name] = saved[name] || {};
-      saved[name].aprobada = !saved[name].aprobada;
+      saved[name] = !saved[name];
       localStorage.setItem(KEY, JSON.stringify(saved));
       render();
     }
